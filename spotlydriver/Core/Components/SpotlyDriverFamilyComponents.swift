@@ -1,9 +1,5 @@
 import SwiftUI
 
-enum SpotlyLayout {
-    static let rootTabContentInset: CGFloat = 0
-}
-
 enum SpotlyDriverCardVariant {
     case sectionSurface, standard, operational, metric, elevated, hero, warning, compact
 

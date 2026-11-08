@@ -23,6 +23,14 @@ enum DriverMockData {
         joinedAt: Calendar.current.date(byAdding: .month, value: -4, to: Date()) ?? Date()
     )
 
+    static let zones: [DeliveryZone] = [
+        DeliveryZone(id: "zone-harare-north", name: "Harare North", city: "Harare", areas: ["Borrowdale", "Avondale", "Highlands", "Mount Pleasant"], isActive: true, demandLevel: .high, estimatedRequests: 12, notes: "Best coverage for grocery, pharmacy, food, and gift requests."),
+        DeliveryZone(id: "zone-harare-cbd", name: "Harare CBD", city: "Harare", areas: ["CBD", "Avenues", "Milton Park"], isActive: true, demandLevel: .normal, estimatedRequests: 7, notes: "Strong lunch and pharmacy pickup demand."),
+        DeliveryZone(id: "zone-bulawayo-central", name: "Bulawayo Central", city: "Bulawayo", areas: ["City Centre", "Suburbs", "Famona"], isActive: false, demandLevel: .low, estimatedRequests: 0, notes: "Launch partner zone coming soon."),
+        DeliveryZone(id: "zone-vic-falls", name: "Victoria Falls launch zone", city: "Victoria Falls", areas: ["Town Centre", "Falls Drive"], isActive: false, demandLevel: .low, estimatedRequests: 0, notes: "Launch partner zone coming soon."),
+        DeliveryZone(id: "zone-mutare", name: "Mutare launch zone", city: "Mutare", areas: ["City Centre", "Murambi"], isActive: false, demandLevel: .low, estimatedRequests: 0, notes: "Launch partner zone coming soon.")
+    ]
+
     static let offeredJobs: [DeliveryJob] = [
         DeliveryJob(
             id: "job-002",
@@ -30,7 +38,7 @@ enum DriverMockData {
             businessID: "biz-spar",
             businessName: "Spar Avondale",
             businessCategory: "Grocery",
-            jobType: .shopAndDeliver,
+            jobType: .groceryShopAndDeliver,
             fulfillmentMode: .driverShop,
             pickupRequirement: .shopItems,
             dropoffRequirement: .meetCustomer,
@@ -45,14 +53,15 @@ enum DriverMockData {
                 DeliveryItem(id: "item-spar-bread", name: "Bread", quantity: "x1", notes: nil, isFound: false, isUnavailable: false, substitution: nil, price: 1.20),
                 DeliveryItem(id: "item-spar-milk", name: "Milk", quantity: "x2", notes: "Full cream if available", isFound: false, isUnavailable: false, substitution: nil, price: 2.40),
                 DeliveryItem(id: "item-spar-eggs", name: "Eggs", quantity: "x1", notes: "Tray of 12", isFound: false, isUnavailable: false, substitution: nil, price: 3.10),
-                DeliveryItem(id: "item-spar-tomatoes", name: "Tomatoes", quantity: "x1 bag", notes: "Firm tomatoes", isFound: false, isUnavailable: false, substitution: nil, price: 1.80)
+                DeliveryItem(id: "item-spar-tomatoes", name: "Tomatoes", quantity: "x1 bag", notes: "Firm tomatoes", isFound: false, isUnavailable: false, substitution: nil, price: 1.80),
+                DeliveryItem(id: "item-spar-chicken", name: "Chicken pack", quantity: "x1", notes: "Fresh pack if available", isFound: false, isUnavailable: false, substitution: nil, price: 5.20)
             ],
             substitutionsAllowed: true,
             pickupCode: nil,
             customerPIN: nil,
             orderNumber: "SPT-10482",
             distanceKM: 3.1,
-            estimatedDurationMinutes: 24,
+            estimatedDurationMinutes: 14,
             pickupTimeWindow: "Shop now",
             earnings: 4.25,
             tip: 0.50,
@@ -67,8 +76,8 @@ enum DriverMockData {
             businessID: "biz-braai",
             businessName: "The Braai House",
             businessCategory: "Restaurant",
-            jobType: .preparedPickup,
-            fulfillmentMode: .merchantPrepared,
+            jobType: .preparedFoodPickup,
+            fulfillmentMode: .orderNumberConfirmation,
             pickupRequirement: .confirmOrderNumber,
             dropoffRequirement: .customerPIN,
             paymentHandling: .prepaid,
@@ -99,7 +108,7 @@ enum DriverMockData {
             businessCategory: "Pharmacy",
             jobType: .pharmacyVerifiedPickup,
             fulfillmentMode: .pharmacyVerified,
-            pickupRequirement: .showPickupCode,
+            pickupRequirement: .collectSealedPackage,
             dropoffRequirement: .customerPIN,
             paymentHandling: .prepaid,
             pickupAddress: "Booties Pharmacy, Nelson Mandela Ave, CBD",
@@ -111,7 +120,7 @@ enum DriverMockData {
             items: [DeliveryItem(id: "item-rx-package", name: "Verified pharmacy package", quantity: "x1", notes: "Sealed package", isFound: true, isUnavailable: false, substitution: nil, price: nil)],
             substitutionsAllowed: false,
             pickupCode: "RX-6021",
-            customerPIN: "6021",
+            customerPIN: "7294",
             orderNumber: "ORD-10484",
             distanceKM: 6.4,
             estimatedDurationMinutes: 26,
@@ -130,7 +139,7 @@ enum DriverMockData {
             businessCategory: "Flowers & Gifts",
             jobType: .giftDelivery,
             fulfillmentMode: .giftPrepared,
-            pickupRequirement: .collectPackage,
+            pickupRequirement: .collectGiftPackage,
             dropoffRequirement: .photoProofPlaceholder,
             paymentHandling: .prepaid,
             pickupAddress: "Borrowdale Village, Shop 12",
@@ -167,14 +176,14 @@ enum DriverMockData {
             paymentHandling: .cashOnDelivery(amount: 18.40),
             pickupAddress: "Nando's Borrowdale, Borrowdale Road",
             pickupArea: "Borrowdale",
-            dropoffAddress: "9 Second Street, Belgravia",
-            dropoffArea: "Belgravia",
+            dropoffAddress: "14 Msasa Drive, Greendale",
+            dropoffArea: "Greendale",
             customerName: "K. Zhou",
             maskedPhone: "+263 78 *** 6302",
-            items: [DeliveryItem(id: "item-nandos-takeaway", name: "Prepared takeaway order", quantity: "x1", notes: nil, isFound: true, isUnavailable: false, substitution: nil, price: nil)],
+            items: [DeliveryItem(id: "item-nandos-takeaway", name: "Family peri-peri meal", quantity: "x1", notes: nil, isFound: true, isUnavailable: false, substitution: nil, price: nil)],
             substitutionsAllowed: false,
             pickupCode: nil,
-            customerPIN: "1840",
+            customerPIN: "1937",
             orderNumber: "SPT-1840",
             distanceKM: 4.8,
             estimatedDurationMinutes: 21,
@@ -184,13 +193,51 @@ enum DriverMockData {
             status: .offered,
             createdAt: minutesAgo(4),
             notes: "Collect USD 18.40 before confirming delivery."
+        ),
+        DeliveryJob(
+            id: "job-006",
+            orderID: "ORD-10486",
+            businessID: "biz-foodlovers-borrowdale",
+            businessName: "Food Lovers Market",
+            businessCategory: "Grocery",
+            jobType: .groceryShopAndDeliver,
+            fulfillmentMode: .driverShop,
+            pickupRequirement: .shopItems,
+            dropoffRequirement: .leaveAtDoor,
+            paymentHandling: .prepaid,
+            pickupAddress: "Food Lovers Market, Borrowdale",
+            pickupArea: "Borrowdale",
+            dropoffAddress: "22 Highlands Lane, Highlands",
+            dropoffArea: "Highlands",
+            customerName: "M. Nyathi",
+            maskedPhone: "+263 77 *** 4420",
+            items: [
+                DeliveryItem(id: "item-flm-apples", name: "Apples", quantity: "x6", notes: nil, isFound: false, isUnavailable: false, substitution: nil, price: nil),
+                DeliveryItem(id: "item-flm-bananas", name: "Bananas", quantity: "x1 bunch", notes: "Ripe but firm", isFound: false, isUnavailable: false, substitution: nil, price: nil),
+                DeliveryItem(id: "item-flm-lettuce", name: "Lettuce", quantity: "x1", notes: nil, isFound: false, isUnavailable: false, substitution: nil, price: nil),
+                DeliveryItem(id: "item-flm-avocados", name: "Avocados", quantity: "x4", notes: "Medium ripe", isFound: false, isUnavailable: false, substitution: nil, price: nil)
+            ],
+            substitutionsAllowed: true,
+            pickupCode: nil,
+            customerPIN: nil,
+            orderNumber: "SPT-10486",
+            distanceKM: 4.0,
+            estimatedDurationMinutes: 19,
+            pickupTimeWindow: "Shop now",
+            earnings: 4.80,
+            tip: 0.00,
+            status: .offered,
+            createdAt: minutesAgo(6),
+            notes: "Substitutions allowed. Receipt upload will be enabled before launch.",
+            proofStatus: .pending
         )
     ]
 
     static let completedJobs: [DeliveryJob] = [
         completedJob(id: "job-c001", orderID: "ORD-10471", businessID: "biz-namaste", name: "Namaste Harare", category: "Restaurant", pickup: "Borrowdale", dropoff: "Chisipite", items: "Chicken tikka masala, garlic naan, samosas", earnings: 4.25, tip: 0.75, hoursAgo: 3),
         completedJob(id: "job-c002", orderID: "ORD-10465", businessID: "biz-foodlovers", name: "Food Lovers Market", category: "Grocery", pickup: "Borrowdale Brooke", dropoff: "Gunhill", items: "Mixed groceries bag", earnings: 3.50, tip: 0.00, hoursAgo: 5),
-        completedJob(id: "job-c003", orderID: "ORD-10458", businessID: "biz-vertex", name: "Vertex Wellness", category: "Flowers & Gifts", pickup: "Newlands", dropoff: "Vainona", items: "Gift package wellness hamper", earnings: 5.00, tip: 1.50, hoursAgo: 7)
+        completedJob(id: "job-c003", orderID: "ORD-10458", businessID: "biz-vertex", name: "Vertex Wellness", category: "Flowers & Gifts", pickup: "Newlands", dropoff: "Vainona", items: "Gift package wellness hamper", earnings: 5.00, tip: 1.50, hoursAgo: 7),
+        completedJob(id: "job-c004", orderID: "ORD-10452", businessID: "biz-chicken-inn", name: "Chicken Inn", category: "Takeaway", pickup: "Avondale", dropoff: "Belgravia", items: "Two-piece meal and chips", earnings: 3.25, tip: 0.00, hoursAgo: 9)
     ]
 
     static let cancelledJobs: [DeliveryJob] = [
@@ -200,7 +247,7 @@ enum DriverMockData {
             businessID: "biz-court-zero",
             businessName: "Court Zero Padel",
             businessCategory: "Event Vendor Support",
-            jobType: .eventVendorDelivery,
+            jobType: .eventVendorSupport,
             fulfillmentMode: .eventPack,
             pickupRequirement: .collectPackage,
             dropoffRequirement: .meetCustomer,
@@ -224,6 +271,37 @@ enum DriverMockData {
             status: .cancelled,
             createdAt: hoursAgo(9),
             notes: "Vendor delivery support cancelled before pickup."
+        ),
+        DeliveryJob(
+            id: "job-x002",
+            orderID: "ORD-10438",
+            businessID: "biz-customer-unavailable",
+            businessName: "Customer unavailable",
+            businessCategory: "Support Case",
+            jobType: .preparedFoodPickup,
+            fulfillmentMode: .merchantPrepared,
+            pickupRequirement: .confirmOrderNumber,
+            dropoffRequirement: .handToCustomer,
+            paymentHandling: .prepaid,
+            pickupAddress: "Chicken Inn, Avondale",
+            pickupArea: "Avondale",
+            dropoffAddress: "Customer address, Mabelreign",
+            dropoffArea: "Mabelreign",
+            customerName: "Unavailable customer",
+            maskedPhone: "+263 77 *** 0188",
+            items: [DeliveryItem(id: "item-unavailable-order", name: "Prepared food order", quantity: "x1", notes: nil, isFound: true, isUnavailable: false, substitution: nil, price: nil)],
+            substitutionsAllowed: false,
+            pickupCode: nil,
+            customerPIN: nil,
+            orderNumber: "SPT-10338",
+            distanceKM: 5.7,
+            estimatedDurationMinutes: 24,
+            pickupTimeWindow: "Failed at drop-off",
+            earnings: 0,
+            tip: 0,
+            status: .failed,
+            createdAt: hoursAgo(11),
+            notes: "Customer unavailable after support wait time."
         )
     ]
 
@@ -236,13 +314,38 @@ enum DriverMockData {
         pendingPayout: 68.25
     )
 
+    static var walletTransactions: [WalletTransaction] {
+        [
+            WalletTransaction(id: "txn-001", type: .deliveryCompleted, amount: 4.50, relatedJobID: "job-c001", createdAt: hoursAgo(3), status: "Pending payout", notes: "Base fare for completed restaurant delivery."),
+            WalletTransaction(id: "txn-002", type: .tipReceived, amount: 0.50, relatedJobID: "job-c002", createdAt: hoursAgo(5), status: "Pending payout", notes: "Customer tip added after delivery."),
+            WalletTransaction(id: "txn-003", type: .cashCollected, amount: 18.40, relatedJobID: "job-005", createdAt: hoursAgo(6), status: "Recorded", notes: "Operational cash amount, not driver earnings."),
+            WalletTransaction(id: "txn-004", type: .payoutPending, amount: 68.25, relatedJobID: nil, createdAt: hoursAgo(8), status: "Pending", notes: "Weekly payout will be enabled for verified accounts.")
+        ]
+    }
+
+    static func dispatchRequests(for jobs: [DeliveryJob]) -> [DispatchRequest] {
+        jobs.enumerated().map { index, job in
+            DispatchRequest(
+                id: "dispatch-\(job.id)",
+                jobID: job.id,
+                receivedAt: minutesAgo(index + 1),
+                expiresAt: Calendar.current.date(byAdding: .minute, value: 10 - min(index, 5), to: Date()),
+                priority: job.totalEarnings >= 5.5 || job.jobType == .pharmacyVerifiedPickup ? .high : .normal,
+                recommendationReason: job.recommendationReason,
+                status: .pending
+            )
+        }
+    }
+
     static let notifications: [DriverNotification] = [
-        DriverNotification(id: "notif-001", title: "New delivery request", message: "Spar Avondale shop & deliver request is available.", type: .newJob, createdAt: minutesAgo(1), isRead: false, relatedJobID: "job-002"),
-        DriverNotification(id: "notif-002", title: "Pickup code required", message: "Booties Pharmacy requires pickup code RX-6021.", type: .pickupCodeRequired, createdAt: minutesAgo(5), isRead: false, relatedJobID: "job-004"),
-        DriverNotification(id: "notif-003", title: "Drop-off note updated", message: "Petal & Bow: keep upright and avoid direct sun.", type: .dropoffNoteChanged, createdAt: minutesAgo(12), isRead: true, relatedJobID: "job-003"),
+        DriverNotification(id: "notif-001", title: "New delivery request", message: "Spar Avondale shop & deliver request is available.", type: .newJobRequest, createdAt: minutesAgo(1), isRead: false, relatedJobID: "job-002"),
+        DriverNotification(id: "notif-002", title: "Pickup code ready", message: "Booties Pharmacy requires pickup code RX-6021.", type: .pickupCodeReady, createdAt: minutesAgo(5), isRead: false, relatedJobID: "job-004"),
+        DriverNotification(id: "notif-003", title: "Customer note updated", message: "Petal & Bow: keep upright and avoid direct sun.", type: .customerNoteUpdated, createdAt: minutesAgo(12), isRead: true, relatedJobID: "job-003"),
+        DriverNotification(id: "notif-007", title: "Cash collection reminder", message: "Nando's Borrowdale requires USD18.40 cash collection.", type: .cashCollectionReminder, createdAt: minutesAgo(18), isRead: true, relatedJobID: "job-005"),
         DriverNotification(id: "notif-004", title: "Payout pending", message: "USD 68.25 is pending payout. Setup options arrive before launch.", type: .payoutUpdate, createdAt: hoursAgo(28), isRead: true, relatedJobID: nil),
         DriverNotification(id: "notif-005", title: "Verification pending", message: "Driver verification will be reviewed by the Spotly operations team before launch.", type: .verificationUpdate, createdAt: hoursAgo(32), isRead: true, relatedJobID: nil),
-        DriverNotification(id: "notif-006", title: "Safety reminder", message: "For emergencies, contact local emergency services first.", type: .safetyReminder, createdAt: hoursAgo(48), isRead: true, relatedJobID: nil)
+        DriverNotification(id: "notif-006", title: "Safety reminder", message: "For emergencies, contact local emergency services first.", type: .safetyReminder, createdAt: hoursAgo(48), isRead: true, relatedJobID: nil),
+        DriverNotification(id: "notif-008", title: "Shift summary", message: "Your current shift summary appears in Earnings.", type: .shiftSummary, createdAt: hoursAgo(2), isRead: true, relatedJobID: nil)
     ]
 
     private static func completedJob(id: String, orderID: String, businessID: String, name: String, category: String, pickup: String, dropoff: String, items: String, earnings: Double, tip: Double, hoursAgo hour: Int) -> DeliveryJob {
@@ -252,7 +355,7 @@ enum DriverMockData {
             businessID: businessID,
             businessName: name,
             businessCategory: category,
-            jobType: category.lowercased().contains("grocery") ? .shopAndDeliver : .preparedPickup,
+            jobType: category.lowercased().contains("grocery") ? .groceryShopAndDeliver : .preparedFoodPickup,
             fulfillmentMode: category.lowercased().contains("grocery") ? .driverShop : .merchantPrepared,
             pickupRequirement: category.lowercased().contains("grocery") ? .uploadReceiptPlaceholder : .confirmOrderNumber,
             dropoffRequirement: .meetCustomer,

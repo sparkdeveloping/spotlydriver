@@ -5,7 +5,9 @@ struct DriverOnboardingView: View {
     @State private var currentStep = 0
     @State private var fullName = ""
     @State private var phone = ""
-    @State private var city = "Harare"
+    @State private var country: SpotlyCountryCode? = nil
+    @State private var city = ""
+    @State private var validationMessage: String?
     @State private var vehicleMake = ""
     @State private var vehicleModel = ""
     @State private var vehiclePlate = ""
@@ -93,7 +95,13 @@ struct DriverOnboardingView: View {
         VStack(alignment: .leading, spacing: SpotlyDriverSpacing.lg) {
             stepHeader(title: "Your Profile", subtitle: "Enter your basic details as they appear on your national ID.")
             DriverTextField(label: "Full Name", placeholder: "John Smith", text: $fullName, icon: "person")
-            DriverTextField(label: "Phone Number", placeholder: "+263 77 000 0000", text: $phone, keyboardType: .phonePad, icon: "phone")
+            Picker("Country", selection: Binding(get: { country?.rawValue ?? "" }, set: { value in country = SpotlyCountryCode(rawValue: value); city = "" })) {
+                Text("Choose country").tag("")
+                ForEach(SpotlyCountryCatalog.countries, id: \.code) { item in Text(item.name).tag(item.code.rawValue) }
+            }
+            .pickerStyle(.menu)
+            DriverTextField(label: "Phone Number", placeholder: country.map { DriverCountryEngine.definition(for: $0).dialCode + " …" } ?? "Choose country first", text: $phone, keyboardType: .phonePad, icon: "phone")
+            if let validationMessage { DriverInfoBanner(icon: "exclamationmark.triangle.fill", message: validationMessage, style: .safety) }
         }
     }
 
@@ -144,36 +152,27 @@ struct DriverOnboardingView: View {
 
     private var cityStep: some View {
         VStack(alignment: .leading, spacing: SpotlyDriverSpacing.lg) {
-            stepHeader(title: "Your City", subtitle: "Select the city where you will be delivering.")
-
-            VStack(spacing: SpotlyDriverSpacing.sm) {
-                ForEach(["Harare", "Bulawayo", "Mutare", "Gweru"], id: \.self) { c in
-                    Button(action: {
-                        DriverHaptics.selection()
-                        city = c
-                    }) {
-                        HStack {
-                            Text(c)
-                                .font(SpotlyDriverTypography.body)
-                                .foregroundStyle(SpotlyDriverColors.label)
-                            Spacer()
-                            if city == c {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(SpotlyDriverColors.primary)
+            stepHeader(title: "Your City", subtitle: "Select the city where you will be driving.")
+            if let country {
+                VStack(spacing: SpotlyDriverSpacing.sm) {
+                    ForEach(DriverCountryEngine.definition(for: country).cities) { item in
+                        Button(action: { DriverHaptics.selection(); city = item.name }) {
+                            HStack {
+                                Text(item.name).font(SpotlyDriverTypography.body).foregroundStyle(SpotlyDriverColors.label)
+                                Spacer()
+                                if city == item.name { Image(systemName: "checkmark.circle.fill").foregroundStyle(SpotlyDriverColors.primary) }
                             }
-                        }
-                        .padding(SpotlyDriverSpacing.md)
-                        .background(city == c ? SpotlyDriverColors.primaryLight : SpotlyDriverColors.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: SpotlyDriverRadius.md)
-                                .strokeBorder(city == c ? SpotlyDriverColors.primary : SpotlyDriverColors.border, lineWidth: city == c ? 1.5 : 1)
-                        )
+                            .padding(SpotlyDriverSpacing.md)
+                            .background(city == item.name ? SpotlyDriverColors.primaryLight : SpotlyDriverColors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.md))
+                            .overlay(RoundedRectangle(cornerRadius: SpotlyDriverRadius.md).strokeBorder(city == item.name ? SpotlyDriverColors.primary : SpotlyDriverColors.border, lineWidth: city == item.name ? 1.5 : 1))
+                        }.buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
                 }
+            } else {
+                DriverInfoBanner(icon: "globe.africa.fill", message: "Choose your country in Profile before selecting a city.", style: .info)
             }
+            if let validationMessage { DriverInfoBanner(icon: "exclamationmark.triangle.fill", message: validationMessage, style: .safety) }
         }
     }
 
@@ -341,13 +340,20 @@ struct DriverOnboardingView: View {
     }
 
     private func advanceStep() {
-        DriverHaptics.medium()
-        withAnimation(SpotlyDriverMotion.standard) {
-            if currentStep == 4 {
-                currentStep = 5
-            } else {
-                currentStep += 1
-            }
+        validationMessage = nil
+        if currentStep == 0 {
+            guard !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { validationMessage = "Enter your full name."; return }
+            guard let country else { validationMessage = "Choose your country."; return }
+            do { phone = try DriverCountryEngine.normalizePhone(phone, country: country) }
+            catch { validationMessage = error.localizedDescription; return }
         }
+        if currentStep == 3 && city.isEmpty { validationMessage = "Choose the city where you will drive."; return }
+        if currentStep == 4 {
+            guard agreedToSafety else { validationMessage = "Agree to the driver guidelines to continue."; return }
+            if let country { try? appState.updateProfile(fullName: fullName, phone: phone, email: appState.profile.email, country: country, city: city) }
+            appState.updateVehicle(type: selectedVehicleType, make: vehicleMake, model: vehicleModel, plateNumber: vehiclePlate, color: vehicleColor)
+        }
+        DriverHaptics.medium()
+        withAnimation(SpotlyDriverMotion.standard) { currentStep += 1 }
     }
 }

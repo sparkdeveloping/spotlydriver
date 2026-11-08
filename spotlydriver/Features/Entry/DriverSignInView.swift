@@ -25,7 +25,7 @@ struct DriverSignInView: View {
                     VStack(spacing: SpotlyDriverSpacing.md) {
                         DriverTextField(
                             label: "Phone or Email",
-                            placeholder: "+263 77 000 0000",
+                            placeholder: "Phone number or email",
                             text: $emailOrPhone,
                             keyboardType: .emailAddress,
                             icon: "person"

@@ -22,7 +22,6 @@ enum SpotlyDriverSpacing {
     static let compactButtonHeight: CGFloat = 44
     static let largeButtonHeight: CGFloat = 52
     static let bottomSafePadding: CGFloat = 24
-    static let rootTabContentInset: CGFloat = 0
     static let tabBarPadding: CGFloat = 24
 }
 

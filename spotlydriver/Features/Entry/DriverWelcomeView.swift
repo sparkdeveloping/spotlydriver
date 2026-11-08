@@ -18,7 +18,7 @@ struct DriverWelcomeView: View {
                         .foregroundStyle(SpotlyDriverColors.label)
                         .multilineTextAlignment(.center)
 
-                    Text("Join Spotly's driver network and earn\ndelivering across Harare.")
+                    Text("Join Spotly's driver network and earn\ndelivering across supported cities.")
                         .font(SpotlyDriverTypography.body)
                         .foregroundStyle(SpotlyDriverColors.secondaryLabel)
                         .multilineTextAlignment(.center)

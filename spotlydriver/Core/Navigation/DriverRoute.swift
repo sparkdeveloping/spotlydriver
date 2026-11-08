@@ -8,9 +8,17 @@ enum DriverRoute: Hashable {
     case customerPIN(String)
     case cashCollection(String)
     case proofOfDelivery(String)
+    case customerUnavailable(String)
+    case jobSummary(String)
+    case transactionDetail(String)
+    case shiftHistory
+    case shiftSummary(String)
     case earningsDetail
     case notificationDetail(String)
     case profileDestination(DriverProfileDestination)
+    case deliveryZones
+    case incidentCenter
+    case incidentDetail(String)
     case support
     case safety
     case reportIssue(String?)
@@ -27,7 +35,9 @@ enum DriverProfileDestination: String, Hashable, CaseIterable {
     case availabilityPreferences
     case deliveryZones
     case jobHistory
+    case shiftHistory
     case performance
+    case incidentHistory
     case helpSupport
     case safetyCenter
     case reportIssue
@@ -35,6 +45,7 @@ enum DriverProfileDestination: String, Hashable, CaseIterable {
     case privacy
     case about
     case appearance
+    case demoControls
 
     var displayTitle: String {
         switch self {
@@ -45,7 +56,9 @@ enum DriverProfileDestination: String, Hashable, CaseIterable {
         case .availabilityPreferences: return "Availability Preferences"
         case .deliveryZones: return "Delivery Zones"
         case .jobHistory: return "Job History"
+        case .shiftHistory: return "Shift History"
         case .performance: return "Performance"
+        case .incidentHistory: return "Incident History"
         case .helpSupport: return "Help & Support"
         case .safetyCenter: return "Safety Center"
         case .reportIssue: return "Report Issue"
@@ -53,6 +66,7 @@ enum DriverProfileDestination: String, Hashable, CaseIterable {
         case .privacy: return "Privacy Policy"
         case .about: return "About Spotly Driver"
         case .appearance: return "Appearance"
+        case .demoControls: return "Demo Controls"
         }
     }
 }

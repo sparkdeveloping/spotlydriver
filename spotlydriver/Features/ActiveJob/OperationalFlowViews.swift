@@ -3,6 +3,7 @@ import SwiftUI
 struct ShoppingListView: View {
     let jobID: String
     @EnvironmentObject var appState: DriverAppState
+    @Environment(\.dismiss) private var dismiss
     @State private var substitutionItemID: String?
     @State private var substitutionText = ""
 
@@ -15,9 +16,19 @@ struct ShoppingListView: View {
                     VStack(alignment: .leading, spacing: SpotlyDriverSpacing.lg) {
                         DriverSectionHeader(title: job.businessName)
                         progressCard(job)
-                        ForEach(job.items) { item in
-                            itemRow(item, job: job)
+                        DriverInfoBanner(icon: "text.bubble.fill", message: "Customer note: choose close substitutions where possible and keep cold items separate.", style: .info)
+                        DriverInfoBanner(icon: "arrow.triangle.2.circlepath", message: job.substitutionsAllowed ? "Substitutions are allowed for this order." : "No substitutions for this order.", style: .info)
+                        ForEach(shoppingSections(for: job), id: \.0) { section, items in
+                            VStack(alignment: .leading, spacing: SpotlyDriverSpacing.sm) {
+                                Text(section)
+                                    .font(SpotlyDriverTypography.headline)
+                                    .foregroundStyle(SpotlyDriverColors.label)
+                                ForEach(items) { item in
+                                    itemRow(item, job: job)
+                                }
+                            }
                         }
+                        shoppingSummary(job)
                         DriverInfoBanner(icon: "receipt.fill", message: "Receipt upload will be enabled before launch.", style: .info)
                     }
                     .padding(SpotlyDriverSpacing.screenEdge)
@@ -28,6 +39,7 @@ struct ShoppingListView: View {
                     DriverBottomActionBar {
                         DriverButton(title: "Finish Shopping", style: .primary, icon: "checkmark.circle.fill", isDisabled: !job.items.allSatisfy(\.isHandled)) {
                             appState.finishShopping()
+                            dismiss()
                         }
                     }
                 }
@@ -67,6 +79,51 @@ struct ShoppingListView: View {
         .background(SpotlyDriverColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.card))
         .driverCardShadow()
+    }
+
+    private func shoppingSections(for job: DeliveryJob) -> [(String, [DeliveryItem])] {
+        let sections = Dictionary(grouping: job.items) { item -> String in
+            let name = item.name.lowercased()
+            if name.contains("tomato") || name.contains("apple") || name.contains("banana") || name.contains("lettuce") || name.contains("avocado") { return "Produce" }
+            if name.contains("milk") || name.contains("egg") || name.contains("chicken") { return "Cold items" }
+            if name.contains("bread") { return "Pantry" }
+            return "Other"
+        }
+        let order = ["Produce", "Pantry", "Cold items", "Other"]
+        return order.compactMap { key in
+            guard let items = sections[key], !items.isEmpty else { return nil }
+            return (key, items)
+        }
+    }
+
+    private func shoppingSummary(_ job: DeliveryJob) -> some View {
+        let substituted = job.items.filter { $0.substitution != nil }.count
+        let unavailable = job.items.filter(\.isUnavailable).count
+        let found = job.items.filter(\.isFound).count
+        return VStack(alignment: .leading, spacing: SpotlyDriverSpacing.sm) {
+            Text("Shopping summary")
+                .font(SpotlyDriverTypography.headline)
+            HStack {
+                summaryPill("\(found) found", color: SpotlyDriverColors.primary)
+                summaryPill("\(substituted) substituted", color: SpotlyDriverColors.warning)
+                summaryPill("\(unavailable) unavailable", color: SpotlyDriverColors.destructive)
+            }
+        }
+        .padding(SpotlyDriverSpacing.md)
+        .background(SpotlyDriverColors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.card))
+        .driverCardShadow()
+    }
+
+    private func summaryPill(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(SpotlyDriverTypography.caption1)
+            .fontWeight(.semibold)
+            .foregroundStyle(color)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(color.opacity(0.1))
+            .clipShape(Capsule())
     }
 
     private func itemRow(_ item: DeliveryItem, job: DeliveryJob) -> some View {
@@ -197,19 +254,59 @@ struct CashCollectionView: View {
     let jobID: String
     @EnvironmentObject var appState: DriverAppState
     @Environment(\.dismiss) private var dismiss
+    @State private var showConfirmCollection = false
 
     var body: some View {
         if let job = appState.job(withID: jobID) {
-            OperationalConfirmationView(
-                icon: "banknote.fill",
-                title: "Collect cash",
-                value: DriverFormatters.price(job.cashToCollect),
-                message: "Collect the full cash amount before confirming delivery. Do not capture payment in this demo build.",
-                buttonTitle: "I collected cash"
-            ) {
-                appState.markCashCollected()
-                dismiss()
+            VStack(spacing: SpotlyDriverSpacing.xl) {
+                Spacer()
+                Image(systemName: "banknote.fill")
+                    .font(.system(size: 56, weight: .semibold))
+                    .foregroundStyle(SpotlyDriverColors.primary)
+                VStack(spacing: SpotlyDriverSpacing.sm) {
+                    Text("Collect cash")
+                        .font(SpotlyDriverTypography.title2)
+                    Text(DriverFormatters.price(job.cashToCollect))
+                        .font(SpotlyDriverTypography.largeTitle)
+                        .foregroundStyle(SpotlyDriverColors.primary)
+                    Text("Collect the full amount before confirming delivery. Cash collected is tracked separately from driver earnings.")
+                        .font(SpotlyDriverTypography.subheadline)
+                        .foregroundStyle(SpotlyDriverColors.secondaryLabel)
+                        .multilineTextAlignment(.center)
+                }
+                VStack(spacing: SpotlyDriverSpacing.sm) {
+                    DriverButton(title: "Customer cannot pay", style: .outline, icon: "exclamationmark.triangle") {
+                        appState.reportIssue(jobID: jobID, type: .paymentIssue, notes: "Customer cannot pay cash amount.")
+                    }
+                    DriverButton(title: "Wrong amount", style: .outline, icon: "banknote") {
+                        appState.reportIssue(jobID: jobID, type: .paymentIssue, notes: "Customer offered wrong cash amount.")
+                    }
+                    DriverButton(title: "Safety concern", style: .destructive, icon: "shield.lefthalf.filled") {
+                        appState.reportIssue(jobID: jobID, type: .safetyConcern, notes: "Safety concern during cash collection.")
+                    }
+                }
+                Spacer()
             }
+            .padding(SpotlyDriverSpacing.screenEdge)
+            .background(SpotlyDriverColors.groupedBackground)
+            .safeAreaInset(edge: .bottom) {
+                DriverBottomActionBar {
+                    DriverButton(title: "I collected cash", style: .primary, icon: "checkmark.circle.fill") {
+                        showConfirmCollection = true
+                    }
+                }
+            }
+            .alert("Confirm cash collected?", isPresented: $showConfirmCollection) {
+                Button("Confirm") {
+                    appState.markCashCollected()
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Confirm you collected \(DriverFormatters.price(job.cashToCollect)) before continuing.")
+            }
+            .navigationTitle("Collect cash")
+            .navigationBarTitleDisplayMode(.inline)
         } else {
             JobUnavailableView()
         }
@@ -231,6 +328,72 @@ struct ProofOfDeliveryPlaceholderView: View {
         ) {
             appState.submitProofPlaceholder()
             dismiss()
+        }
+    }
+}
+
+struct CustomerUnavailableView: View {
+    let jobID: String
+    @EnvironmentObject var appState: DriverAppState
+    @Environment(\.dismiss) private var dismiss
+    @State private var resolution: String?
+
+    private var job: DeliveryJob? { appState.job(withID: jobID) }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: SpotlyDriverSpacing.lg) {
+                if let job {
+                    VStack(alignment: .leading, spacing: SpotlyDriverSpacing.sm) {
+                        Image(systemName: "person.crop.circle.badge.exclamationmark")
+                            .font(.system(size: 34, weight: .semibold))
+                            .foregroundStyle(SpotlyDriverColors.warning)
+                            .frame(width: 58, height: 58)
+                            .background(SpotlyDriverColors.warning.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.card))
+                        Text("Customer unavailable")
+                            .font(SpotlyDriverTypography.title2)
+                        Text("Use this local exception flow when the customer cannot be reached at drop-off.")
+                            .font(SpotlyDriverTypography.subheadline)
+                            .foregroundStyle(SpotlyDriverColors.secondaryLabel)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(SpotlyDriverSpacing.md)
+                    .background(SpotlyDriverColors.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: SpotlyDriverRadius.card))
+                    .driverCardShadow()
+
+                    DriverJobCard(job: job)
+                    DriverInfoBanner(icon: "phone.fill", message: "Try customer contact first. Customer contact will be proxied for privacy.", style: .info)
+                    resolutionButton("Leave at door with proof", icon: "camera.fill", notes: "Customer unavailable: leave-at-door proof selected.")
+                    resolutionButton("Return to merchant", icon: "arrow.uturn.left.circle.fill", notes: "Customer unavailable: return to merchant selected.")
+                    resolutionButton("Contact operations", icon: "headphones", notes: "Customer unavailable: operations contact requested.")
+                    resolutionButton("Mark failed", icon: "xmark.octagon.fill", notes: "Customer unavailable: delivery marked failed.", destructive: true)
+
+                    if let resolution {
+                        DriverInfoBanner(icon: "checkmark.circle.fill", message: resolution, style: .info)
+                    }
+                } else {
+                    JobUnavailableView()
+                }
+            }
+            .padding(SpotlyDriverSpacing.screenEdge)
+            .padding(.bottom, SpotlyDriverSpacing.bottomSafePadding)
+        }
+        .background(SpotlyDriverColors.groupedBackground)
+        .navigationTitle("Customer unavailable")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func resolutionButton(_ title: String, icon: String, notes: String, destructive: Bool = false) -> some View {
+        DriverButton(title: title, style: destructive ? .destructive : .secondary, icon: icon) {
+            appState.reportIssue(jobID: jobID, type: .customerUnavailable, notes: notes)
+            appState.recordTimelineEvent(title: "Customer unavailable", subtitle: title, icon: icon)
+            resolution = "Saved incident and timeline event: \(title)."
+            if destructive {
+                appState.cancelActiveJob(reason: title)
+                dismiss()
+            }
         }
     }
 }

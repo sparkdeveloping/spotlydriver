@@ -143,7 +143,7 @@ struct DriverMainTabView: View {
 private extension View {
     @ViewBuilder
     func driverTabBottomAccessory<Accessory: View>(isEnabled: Bool, @ViewBuilder content: @escaping () -> Accessory) -> some View {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.1, *) {
             self.tabViewBottomAccessory(isEnabled: isEnabled) {
                 content()
                     .padding(.horizontal, SpotlyDriverSpacing.screenEdge)

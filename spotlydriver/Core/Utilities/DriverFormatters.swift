@@ -36,7 +36,7 @@ enum DriverFormatters {
 
     static func priceShort(_ amount: Double) -> String {
         let formatted = currency.string(from: NSNumber(value: amount)) ?? String(format: "%.2f", amount)
-        return "$\(formatted)"
+        return "USD \(formatted)"
     }
 
     static func distance(_ km: Double) -> String {

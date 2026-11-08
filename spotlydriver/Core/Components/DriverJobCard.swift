@@ -70,8 +70,13 @@ struct DriverJobCard: View {
         HStack(spacing: 6) {
             chip(job.operationalBadge, color: SpotlyDriverColors.primary)
             chip(job.paymentHandling.displayLabel, color: job.paymentHandling.requiresAction ? SpotlyDriverColors.warning : SpotlyDriverColors.info)
+            chip(scoreBadge, color: scoreBadge == "Higher pay" ? SpotlyDriverColors.warning : SpotlyDriverColors.primary)
             Spacer(minLength: 0)
         }
+    }
+
+    private var scoreBadge: String {
+        job.recommendationReason == "High earnings" ? "Higher pay" : job.recommendationReason
     }
 
     private var routeBlock: some View {
@@ -197,58 +202,19 @@ struct DriverPageHeader: View {
     let notificationsAction: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: SpotlyDriverSpacing.lg) {
-            HStack {
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 12, weight: .bold))
-                    Text(city)
-                        .font(SpotlyDriverTypography.subheadline)
-                        .fontWeight(.semibold)
-                }
-                .foregroundStyle(SpotlyDriverColors.primary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(SpotlyDriverColors.primaryLight)
-                .clipShape(Capsule())
-
-                Spacer()
-
-                Button(action: notificationsAction) {
-                    ZStack(alignment: .topTrailing) {
-                        Image(systemName: "bell.fill")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(SpotlyDriverColors.label)
-                            .frame(width: 42, height: 42)
-                            .background(SpotlyDriverColors.cardBackground)
-                            .clipShape(Circle())
-                            .shadow(color: SpotlyDriverColors.cardShadow, radius: 8, y: 3)
-                        if unreadCount > 0 {
-                            Circle()
-                                .fill(SpotlyDriverColors.destructive)
-                                .frame(width: 9, height: 9)
-                                .offset(x: -4, y: 4)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Hello, \(name)")
-                        .font(SpotlyDriverTypography.title2)
-                        .foregroundStyle(SpotlyDriverColors.label)
-                    DriverStatusPill(availability: availability)
-                }
-                Spacer()
-                Text(initials)
-                    .font(SpotlyDriverTypography.headline)
-                    .foregroundStyle(SpotlyDriverColors.primary)
-                    .frame(width: 52, height: 52)
-                    .background(SpotlyDriverColors.primaryLight)
-                    .clipShape(Circle())
-            }
+        SpotlyPageHeader(
+            title: "Hello, \(name)",
+            subtitle: "Ready for Spotly delivery operations.",
+            location: city,
+            avatarInitials: initials,
+            variant: .greeting
+        ) {
+            SpotlyIconButton(icon: "bell.fill", badge: unreadCount, action: notificationsAction)
         }
+        .overlay(alignment: .bottomLeading) {
+            DriverStatusPill(availability: availability)
+                .offset(y: 28)
+        }
+        .padding(.bottom, 28)
     }
 }
